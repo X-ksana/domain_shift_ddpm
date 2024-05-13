@@ -99,8 +99,8 @@ def launch():
     args.epochs = 500
     args.batch_size = 12
     args.image_size = 196
-    args.dataset_path = r"/nobackup/scxcw/dataset_cmr/MCMV_Train"
-    args.device = "cuda"
+    args.dataset_path = r"/nobackup/scxcw/dataset_cmr"
+    args.device = "cpu"
     args.lr = 3e-4
     train(args)
 
