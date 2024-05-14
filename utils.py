@@ -164,11 +164,11 @@ def get_data(args):
         val_dataset = torch.utils.data.Subset(val_dataset, indices=range(0, len(val_dataset), args.slice_size))
 
     train_dataloader = DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True, num_workers=args.num_workers)
-    val_dataset = DataLoader(val_dataset, batch_size=2*args.batch_size, shuffle=False, num_workers=args.num_workers)
+    val_dataloader = DataLoader(val_dataset, batch_size=2*args.batch_size, shuffle=False, num_workers=args.num_workers)
     
     print("Dataloader complete...")
 
-    return train_dataloader, val_dataset
+    return train_dataloader, val_dataloader
 
 
 def mk_folders(run_name):
