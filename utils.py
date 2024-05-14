@@ -90,6 +90,7 @@ def save_images(images, path, **kwargs):
     im.save(path)
 
 
+
 def get_data_original(args):
     train_transforms = torchvision.transforms.Compose([
         T.Resize(args.img_size + int(.25*args.img_size)),  # args.img_size + 1/4 *args.img_size
@@ -118,7 +119,7 @@ def get_data_original(args):
 
 
 ## Added for nifti get_data; changed the original get_data to get_data_original
-
+## Need to fix broadcast problem - because cardiac mr is single channel
 def get_data(args):
   # Set seed for reproducibility
     torch.manual_seed(42)
@@ -133,13 +134,15 @@ def get_data(args):
         T.Resize(args.img_size + int(.25*args.img_size)),  # args.img_size + 1/4 *args.img_size
         T.RandomResizedCrop(args.img_size, scale=(0.8, 1.0)),
         T.ToTensor(),
-        T.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
+     #   T.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
+        T.Normalize(mean=[0.5], std=[0.5]),
     ])
 
     val_transform = torchvision.transforms.Compose([
         T.Resize(args.img_size),
         T.ToTensor(),
-        T.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
+   #     T.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
+        T.Normalize(mean=[0.5], std=[0.5]),
 
     ])
 
