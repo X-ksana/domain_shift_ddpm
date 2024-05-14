@@ -59,14 +59,14 @@ class Diffusion:
 
 
 def train(args):
-    setup_logging(args.run_name)
+  #  setup_logging(args.run_name)
     device = args.device
     dataloader = get_data(args)
     model = UNet().to(device)
     optimizer = optim.AdamW(model.parameters(), lr=args.lr)
     mse = nn.MSELoss()
     diffusion = Diffusion(img_size=args.image_size, device=device)
-    logger = SummaryWriter(os.path.join("runs", args.run_name))
+#    logger = SummaryWriter(os.path.join("runs", args.run_name))
     l = len(dataloader)
 
     for epoch in range(args.epochs):
