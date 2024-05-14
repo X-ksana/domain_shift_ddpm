@@ -6,11 +6,12 @@ from tqdm import tqdm
 from torch import optim
 from utils import *
 from modules import UNet
-import logging
+import logging, copy
+import argparse
 from torch.utils.tensorboard import SummaryWriter
 
-logging.basicConfig(format="%(asctime)s - %(levelname)s: %(message)s", level=logging.INFO, datefmt="%I:%M:%S")
-
+def setup_logging(run_name):
+    logging.basicConfig(filename=f"{run_name}.log", format="%(asctime)s - %(levelname)s: %(message)s", level=logging.INFO, datefmt="%I:%M:%S")
 
 class Diffusion:
     def __init__(self, noise_steps=1000, beta_start=1e-4, beta_end=0.02, img_size=256, device="cuda"):
@@ -59,14 +60,14 @@ class Diffusion:
 
 
 def train(args):
-  #  setup_logging(args.run_name)
+    setup_logging(args.run_name)
     device = args.device
     dataloader = get_data(args)
     model = UNet().to(device)
     optimizer = optim.AdamW(model.parameters(), lr=args.lr)
     mse = nn.MSELoss()
-    diffusion = Diffusion(img_size=args.image_size, device=device)
-#    logger = SummaryWriter(os.path.join("runs", args.run_name))
+    diffusion = Diffusion(img_size=args.img_size, device=device)
+    logger = SummaryWriter(os.path.join("runs", args.run_name))
     l = len(dataloader)
 
     for epoch in range(args.epochs):
@@ -92,16 +93,17 @@ def train(args):
 
 
 def launch():
-    import argparse
     parser = argparse.ArgumentParser()
     args = parser.parse_args()
     args.run_name = "DDPM_Uncondtional"
     args.epochs = 500
     args.batch_size = 12
-    args.image_size = 196
+    args.img_size = 196
     args.dataset_path = r"/nobackup/scxcw/dataset_cmr"
     args.device = "cpu"
     args.lr = 3e-4
+    args.slice_size = 0
+    args.num_workers = 1
     train(args)
 
 
