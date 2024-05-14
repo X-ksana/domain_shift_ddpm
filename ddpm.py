@@ -41,7 +41,7 @@ class Diffusion:
         logging.info(f"Sampling {n} new images....")
         model.eval()
         with torch.no_grad():
-            x = torch.randn((n, 3, self.img_size, self.img_size)).to(self.device)
+            x = torch.randn((n, 1, self.img_size, self.img_size)).to(self.device)
             for i in tqdm(reversed(range(1, self.noise_steps)), position=0):
                 t = (torch.ones(n) * i).long().to(self.device)
                 predicted_noise = model(x, t)
@@ -69,6 +69,7 @@ def train(args):
     diffusion = Diffusion(img_size=args.img_size, device=device)
     logger = SummaryWriter(os.path.join("runs", args.run_name))
     l = len(dataloader)
+    best_mse = float('inf')
 
     for epoch in range(args.epochs):
         logging.info(f"Starting epoch {epoch}:")
@@ -87,8 +88,17 @@ def train(args):
             pbar.set_postfix(MSE=loss.item())
             logger.add_scalar("MSE", loss.item(), global_step=epoch * l + i)
 
-        sampled_images = diffusion.sample(model, n=images.shape[0])
-        save_images(sampled_images, os.path.join("results", args.run_name, f"{epoch}.jpg"))
+        if epoch %  100 == 0:
+            torch.save(model.state_dict(), os.path.join("models",args.run_name, f"ckpt_epoch_{epoch}.pt"))
+
+        if loss.item() < best_mse:
+            best_mse = loss.item()
+            torch.save(model.state_dict(), os.path.join("models", args.run_name, "best_model.pt"))
+
+            
+# No need to sample image to save time
+       # sampled_images = diffusion.sample(model, n=images.shape[0])
+#        save_images(sampled_images, os.path.join("results", args.run_name, f"{epoch}.jpg"))
         torch.save(model.state_dict(), os.path.join("models", args.run_name, f"ckpt.pt"))
 
 
