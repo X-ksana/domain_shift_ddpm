@@ -22,13 +22,13 @@ class NiftiDataset(Dataset):
         image_data = nifti_image.get_fdata()
 
         # Convert the image data to a PIL image
-        pil_image = Image.fromarray(image_data)
+        image_tensor = Image.fromarray(image_data)
 
         # Apply transformations if specified
         if self.transform:
-            pil_image = self.transform(pil_image)
+            image_tensor = self.transform(image_tensor)
 
         # Convert the PIL image to a torch tensor
-        image_tensor = transforms.ToTensor()(pil_image)
+     #   image_tensor = transforms.ToTensor()(pil_image)
 
         return image_tensor
