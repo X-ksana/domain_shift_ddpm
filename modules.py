@@ -129,7 +129,7 @@ class Up(nn.Module):
 
 
 class UNet(nn.Module):
-    def __init__(self, c_in=3, c_out=3, time_dim=256, remove_deep_conv=False):
+    def __init__(self, c_in=1, c_out=3, time_dim=256, remove_deep_conv=False):
         super().__init__()
         self.time_dim = time_dim
         self.remove_deep_conv = remove_deep_conv

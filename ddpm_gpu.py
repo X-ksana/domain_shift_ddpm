@@ -14,7 +14,7 @@ def setup_logging(run_name):
     logging.basicConfig(filename=f"{run_name}.log", format="%(asctime)s - %(levelname)s: %(message)s", level=logging.INFO, datefmt="%I:%M:%S")
 
 class Diffusion:
-    def __init__(self, noise_steps=1000, beta_start=1e-4, beta_end=0.02, img_size=256, device="cuda"):
+    def __init__(self, noise_steps=500, beta_start=1e-4, beta_end=0.02, img_size=256, device="cuda"):
         self.noise_steps = noise_steps
         self.beta_start = beta_start
         self.beta_end = beta_end
@@ -62,19 +62,20 @@ class Diffusion:
 def train(args):
     setup_logging(args.run_name)
     device = args.device
-    dataload = get_data(args)
+    train_dataloader, val_dataloader = get_data(args)
     model = UNet().to(device)
     optimizer = optim.AdamW(model.parameters(), lr=args.lr)
     mse = nn.MSELoss()
     diffusion = Diffusion(img_size=args.img_size, device=device)
     logger = SummaryWriter(os.path.join("runs", args.run_name))
-    l = len(dataload)
+    l = len(train_dataloader)
     best_mse = float('inf')
 
     for epoch in range(args.epochs):
         logging.info(f"Starting epoch {epoch}:")
-        pbar = tqdm(dataload)
-        for i, images in enumerate(pbar):
+        pbar = tqdm(train_dataloader)
+        for i,images in enumerate(pbar):
+         
             images = images.to(device)
             t = diffusion.sample_timesteps(images.shape[0]).to(device)
             x_t, noise = diffusion.noise_images(images, t)
@@ -87,6 +88,8 @@ def train(args):
 
             pbar.set_postfix(MSE=loss.item())
             logger.add_scalar("MSE", loss.item(), global_step=epoch * l + i)
+             # Print loss separately
+            print(f"Epoch [{epoch}/{args.epochs}], Step [{i}/{len(train_dataloader)}], Loss: {loss.item()}")
 
         if epoch %  100 == 0:
             torch.save(model.state_dict(), os.path.join("models",args.run_name, f"ckpt_epoch_{epoch}.pt"))
@@ -107,10 +110,10 @@ def launch():
     args = parser.parse_args()
     args.run_name = "DDPM_Uncondtional"
     args.epochs = 500
-    args.batch_size = 12
-    args.img_size = 196
+    args.batch_size = 2
+    args.img_size = 64
     args.dataset_path = r"/nobackup/scxcw/dataset_cmr"
-    args.device = "cpu"
+    args.device = "cuda"
     args.lr = 3e-4
     args.slice_size = 0
     args.num_workers = 1
